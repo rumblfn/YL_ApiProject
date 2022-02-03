@@ -29,6 +29,7 @@ class MyWidget(QMainWindow):
         if response:
             f = open("Res.png", 'wb')
             data = response.content
+            f.write(data)
             self.pixmap = QPixmap('Res.png')
             self.image = QLabel(self)
             self.image.move(0, 0)
