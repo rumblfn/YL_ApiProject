@@ -14,7 +14,8 @@ class MyWidget(QMainWindow):
         super().__init__()
         uic.loadUi('Design.ui', self)
         self.setGeometry(600, 450, *SCREEN_SIZE)
-        self.delta = "0.02"
+        self.delta_ind = 0
+        self.delta_pars = [0.5, 1, 2, 4, 6, 10, 18, 70]
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
@@ -28,7 +29,7 @@ class MyWidget(QMainWindow):
 
         self.params = {
             "ll": ",".join([lon, lat]),
-            "spn": ",".join([self.delta, self.delta]),
+            "spn": ",".join([str(self.delta_pars[self.delta_ind] / 100), str(self.delta_pars[self.delta_ind] / 100)]),
             "l": "map"
         }
 
@@ -44,21 +45,19 @@ class MyWidget(QMainWindow):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageUp:
-            self.change_delta(True)
-        if event.key() == Qt.Key_PageDown:
             self.change_delta(False)
+        if event.key() == Qt.Key_PageDown:
+            self.change_delta(True)
 
     def change_delta(self, arg):
         if arg:
-            if round(float(self.delta) + 0.005, 3) <= 0.3:
-                self.delta = str(round(float(self.delta) + 0.005, 3))
+            if self.delta_ind < 7:
+                self.delta_ind += 1
                 self.add_img()
-                print(self.delta)
         else:
-            if round(float(self.delta) - 0.005, 3) >= 0.005:
-                self.delta = str(round(float(self.delta) - 0.005, 3))
+            if self.delta_ind > 0:
+                self.delta_ind -= 1
                 self.add_img()
-                print(self.delta)
 
 
 if __name__ == '__main__':
