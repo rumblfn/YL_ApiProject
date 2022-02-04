@@ -17,12 +17,22 @@ class MyWidget(QMainWindow):
         self.delta_ind = 0
         self.delta_pars = [0.5, 1, 2, 4, 6, 10, 18, 70]
         self.image = QLabel(self)
-        self.image.move(0, 0)
+        self.image.move(0, 50)
         self.image.resize(600, 450)
+
+        self.pushButton_sql.clicked.connect(lambda: self.set_view('skl'))
+        self.pushButton_sat.clicked.connect(lambda: self.set_view('sat'))
+        self.pushButton_map.clicked.connect(lambda: self.set_view('map'))
 
         self.lon = 37.530887
         self.lat = 55.703118
         self.move_speed = 0.001
+        self.view = 'map'
+
+        self.add_img()
+
+    def set_view(self, arg):
+        self.view = arg
         self.add_img()
 
     def add_img(self):
@@ -31,7 +41,7 @@ class MyWidget(QMainWindow):
         self.params = {
             "ll": ",".join([str(self.lon), str(self.lat)]),
             "spn": ",".join([str(self.delta_pars[self.delta_ind] / 100), str(self.delta_pars[self.delta_ind] / 100)]),
-            "l": "map"
+            "l": self.view
         }
 
         response = requests.get(api_server, params=self.params)
