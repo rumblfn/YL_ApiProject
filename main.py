@@ -4,6 +4,7 @@ import requests
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt5.QtCore import Qt
 
 SCREEN_SIZE = [600, 450]
 
@@ -13,30 +14,70 @@ class MyWidget(QMainWindow):
         super().__init__()
         uic.loadUi('Design.ui', self)
         self.setGeometry(600, 450, *SCREEN_SIZE)
+        self.delta_ind = 0
+        self.delta_pars = [0.5, 1, 2, 4, 6, 10, 18, 70]
+        self.image = QLabel(self)
+        self.image.move(0, 0)
+        self.image.resize(600, 450)
 
+        self.lon = 37.530887
+        self.lat = 55.703118
+        self.move_speed = 0.001
+        self.add_img()
+
+    def add_img(self):
         api_server = "http://static-maps.yandex.ru/1.x/"
 
-        lon = "37.530887"
-        lat = "55.703118"
-        delta = "0.002"
-
-        params = {
-            "ll": ",".join([lon, lat]),
-            "spn": ",".join([delta, delta]),
+        self.params = {
+            "ll": ",".join([str(self.lon), str(self.lat)]),
+            "spn": ",".join([str(self.delta_pars[self.delta_ind] / 100), str(self.delta_pars[self.delta_ind] / 100)]),
             "l": "map"
         }
-        response = requests.get(api_server, params=params)
+
+        response = requests.get(api_server, params=self.params)
         if response:
             f = open("Res.png", 'wb')
             data = response.content
             f.write(data)
             self.pixmap = QPixmap('Res.png')
-            self.image = QLabel(self)
-            self.image.move(0, 0)
-            self.image.resize(600, 450)
             self.image.setPixmap(self.pixmap)
             f.close()
             os.remove('Res.png')
+
+    def movement(self, key):
+        if key == Qt.Key_Left:
+            self.lon -= self.move_speed
+            self.add_img()
+        if key == Qt.Key_Up:
+            self.lat += self.move_speed
+            self.add_img()
+        if key == Qt.Key_Right:
+            self.lon += self.move_speed
+            self.add_img()
+        if key == Qt.Key_Down:
+            self.lat -= self.move_speed
+            self.add_img()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_PageUp:
+            self.change_delta(False)
+        if event.key() == Qt.Key_PageDown:
+            self.change_delta(True)
+
+        # task 1.3
+        self.movement(event.key())
+
+    def change_delta(self, arg):
+        if arg:
+            if self.delta_ind < 7:
+                self.move_speed *= 2
+                self.delta_ind += 1
+                self.add_img()
+        else:
+            if self.delta_ind > 0:
+                self.move_speed /= 2
+                self.delta_ind -= 1
+                self.add_img()
 
 
 if __name__ == '__main__':
